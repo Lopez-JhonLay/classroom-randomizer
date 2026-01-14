@@ -1,104 +1,46 @@
-"use client";
+import { getClassrooms } from "../actions/classroom.action";
+import Link from "next/link";
 
-import { useState, useCallback, useMemo } from "react";
-import ClassroomGrid from "../components/ClassroomGrid";
-import Header from "../components/Header";
-import WinnerModal from "../components/WinnerModal";
+async function Classroom() {
+  const result = await getClassrooms();
+  const classrooms = result.success && result.data ? result.data : [];
 
-function Page() {
-	const studentCount = 50;
-	const [selectedId, setSelectedId] = useState<number | null>(null);
-	const [isRandomizing, setIsRandomizing] = useState(false);
-	const [showWinner, setShowWinner] = useState(false);
+  return (
+    <div className="min-h-screen bg-linear-to-br from-blue-50 to-indigo-100 py-12 px-4">
+      <div className="max-w-6xl mx-auto">
+        <h1 className="text-4xl font-bold text-center text-gray-800 mb-8">Classrooms</h1>
 
-	const selectedStudent = useMemo(() => {
-		if (selectedId === null) return null;
-		const names = [
-			"Emma W.",
-			"Liam J.",
-			"Noah M.",
-			"Olivia P.",
-			"Ava R.",
-			"Elijah B.",
-			"James D.",
-			"William T.",
-			"Lucas H.",
-			"Mia S.",
-			"Benjamin K.",
-			"Henry L.",
-			"Amelia V.",
-			"Harper G.",
-			"Evelyn C.",
-			"Alexander M.",
-			"Sofia R.",
-			"Jackson P.",
-			"Isabella T.",
-			"Mason L.",
-		];
-		const index = selectedId - 1;
-		return {
-			name: names[index % names.length] || `Student ${selectedId}`,
-			avatar: `https://i.pravatar.cc/150?img=${(index % 70) + 1}`,
-		};
-	}, [selectedId]);
+        {!result.success && (
+          <div className="bg-red-50 text-red-800 border border-red-200 p-4 rounded-lg mb-6">{result.error}</div>
+        )}
 
-	const handleReset = useCallback(() => {
-		setSelectedId(null);
-		setShowWinner(false);
-	}, []);
-
-	const handleStartRandomizer = useCallback(() => {
-		if (isRandomizing) return;
-
-		setShowWinner(false);
-		setIsRandomizing(true);
-
-		// Animate through random students for effect
-		let iterations = 0;
-		const maxIterations = 20;
-		const interval = setInterval(() => {
-			const randomId = Math.floor(Math.random() * studentCount) + 1;
-			setSelectedId(randomId);
-			iterations++;
-
-			if (iterations >= maxIterations) {
-				clearInterval(interval);
-				// Final random selection
-				const finalId = Math.floor(Math.random() * studentCount) + 1;
-				setSelectedId(finalId);
-				setIsRandomizing(false);
-				// Show winner modal after a brief delay
-				setTimeout(() => setShowWinner(true), 300);
-			}
-		}, 200);
-	}, [isRandomizing, studentCount]);
-
-	const handleCloseWinner = useCallback(() => {
-		setShowWinner(false);
-	}, []);
-
-	return (
-		<div>
-			<Header
-				studentCount={studentCount}
-				onReset={handleReset}
-				onStartRandomizer={handleStartRandomizer}
-			/>
-			<ClassroomGrid
-				studentCount={studentCount}
-				selectedId={selectedId}
-				isRandomizing={isRandomizing}
-			/>
-			{selectedStudent && (
-				<WinnerModal
-					name={selectedStudent.name}
-					avatar={selectedStudent.avatar}
-					isVisible={showWinner}
-					onClose={handleCloseWinner}
-				/>
-			)}
-		</div>
-	);
+        {classrooms.length === 0 ? (
+          <div className="bg-white rounded-lg shadow-md p-8 text-center">
+            <p className="text-gray-500 text-lg">No classrooms found. Create one to get started!</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {classrooms.map((classroom) => (
+              <Link
+                key={classroom.id}
+                href={`/classroom/${classroom.section}`}
+                className="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 p-6 border-l-4 border-blue-500 hover:border-blue-600 cursor-pointer"
+              >
+                <div className="flex items-center justify-center">
+                  <div className="text-center">
+                    <p className="text-gray-600 text-sm font-medium mb-2">Grade</p>
+                    <p className="text-4xl font-bold text-blue-600 mb-4">{classroom.grade}</p>
+                    <p className="text-gray-600 text-sm font-medium mb-2">Section</p>
+                    <p className="text-2xl font-semibold text-gray-800">{classroom.section}</p>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
 
-export default Page;
+export default Classroom;
