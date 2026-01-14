@@ -37,3 +37,27 @@ export async function getClassrooms() {
     return { success: false, error: "Failed to fetch classrooms" };
   }
 }
+
+export async function getClassroomBySection(section: string) {
+  try {
+    const classroom = await prisma.classroom.findFirst({
+      where: {
+        section: {
+          equals: section,
+          mode: "insensitive",
+        },
+      },
+    });
+
+    if (!classroom) {
+      return { success: false, error: "Classroom not found" };
+    }
+
+    return { success: true, data: classroom };
+  } catch (error) {
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to fetch classroom" };
+  }
+}

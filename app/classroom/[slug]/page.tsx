@@ -1,11 +1,15 @@
 "use client";
 
 import { useState, useCallback, useMemo } from "react";
+import { useParams } from "next/navigation";
 import ClassroomGrid from "@/app/components/ClassroomGrid";
 import Header from "@/app/components/Header";
 import WinnerModal from "@/app/components/WinnerModal";
 
 function Page() {
+  const params = useParams();
+  const section = params.slug as string;
+
   const studentCount = 50;
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [isRandomizing, setIsRandomizing] = useState(false);
@@ -79,8 +83,15 @@ function Page() {
 
   return (
     <div>
-      <Header studentCount={studentCount} onReset={handleReset} onStartRandomizer={handleStartRandomizer} />
+      <Header
+        studentCount={studentCount}
+        onReset={handleReset}
+        onStartRandomizer={handleStartRandomizer}
+        section={section}
+      />
+
       <ClassroomGrid studentCount={studentCount} selectedId={selectedId} isRandomizing={isRandomizing} />
+
       {selectedStudent && (
         <WinnerModal
           name={selectedStudent.name}

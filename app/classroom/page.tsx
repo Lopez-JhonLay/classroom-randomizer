@@ -23,7 +23,7 @@ async function Classroom() {
             {classrooms.map((classroom) => (
               <Link
                 key={classroom.id}
-                href={`/classroom/${classroom.section}`}
+                href={`/classroom/${classroom.section.toLowerCase()}`}
                 className="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 p-6 border-l-4 border-blue-500 hover:border-blue-600 cursor-pointer"
               >
                 <div className="flex items-center justify-center">
