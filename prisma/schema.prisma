@@ -14,7 +14,17 @@ datasource db {
 }
 
 model Classroom {
-  id      String @id @default(uuid())
-  grade   Int
-  section String @unique
+  id       String    @id @default(uuid())
+  grade    Int
+  section  String    @unique
+  students Student[]
+}
+
+model Student {
+  id          String    @id @default(uuid())
+  firstName   String
+  lastName    String
+  urlPhoto    String?
+  classroomId String
+  classroom   Classroom @relation(fields: [classroomId], references: [id], onDelete: Cascade)
 }
