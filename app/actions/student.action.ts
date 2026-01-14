@@ -30,3 +30,21 @@ export async function createStudent(data: {
     return { success: false, error: "Failed to create student" };
   }
 }
+
+export async function getStudentsByClassroom(classroomId: string) {
+  try {
+    const students = await prisma.student.findMany({
+      where: {
+        classroomId: classroomId,
+      },
+      orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
+    });
+
+    return { success: true, data: students };
+  } catch (error) {
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to fetch students" };
+  }
+}
