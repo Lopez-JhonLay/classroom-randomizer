@@ -27,22 +27,22 @@ function Page() {
   const [showWinner, setShowWinner] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    // Fetch classroom and students
-    const fetchData = async () => {
-      setIsLoading(true);
-      const classroomResult = await getClassroomBySection(section);
-      if (classroomResult.success && classroomResult.data) {
-        setClassroomId(classroomResult.data.id);
-        const studentsResult = await getStudentsByClassroom(classroomResult.data.id);
-        if (studentsResult.success && studentsResult.data) {
-          setStudents(studentsResult.data);
-        }
+  const fetchData = useCallback(async () => {
+    setIsLoading(true);
+    const classroomResult = await getClassroomBySection(section);
+    if (classroomResult.success && classroomResult.data) {
+      setClassroomId(classroomResult.data.id);
+      const studentsResult = await getStudentsByClassroom(classroomResult.data.id);
+      if (studentsResult.success && studentsResult.data) {
+        setStudents(studentsResult.data);
       }
-      setIsLoading(false);
-    };
-    fetchData();
+    }
+    setIsLoading(false);
   }, [section]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const selectedStudent = useMemo(() => {
     if (selectedId === null) return null;
@@ -96,6 +96,7 @@ function Page() {
         onReset={handleReset}
         onStartRandomizer={handleStartRandomizer}
         section={section}
+        onStudentAdded={fetchData}
       />
 
       {isLoading ? (

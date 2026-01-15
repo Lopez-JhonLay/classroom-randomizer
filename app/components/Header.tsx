@@ -9,9 +9,10 @@ interface HeaderProps {
   onReset?: () => void;
   onStartRandomizer?: () => void;
   section?: string;
+  onStudentAdded?: () => void;
 }
 
-function Header({ studentCount = 0, onReset, onStartRandomizer, section }: HeaderProps) {
+function Header({ studentCount = 0, onReset, onStartRandomizer, section, onStudentAdded }: HeaderProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [classroomId, setClassroomId] = useState<string | null>(null);
 
@@ -108,7 +109,12 @@ function Header({ studentCount = 0, onReset, onStartRandomizer, section }: Heade
         </div>
       </header>
 
-      <StudentFormModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} classroomId={classroomId || ""} />
+      <StudentFormModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        classroomId={classroomId || ""}
+        onStudentAdded={onStudentAdded}
+      />
     </>
   );
 }

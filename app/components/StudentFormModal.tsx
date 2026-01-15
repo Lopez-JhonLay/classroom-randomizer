@@ -7,9 +7,10 @@ interface StudentFormModalProps {
   isOpen: boolean;
   onClose: () => void;
   classroomId: string;
+  onStudentAdded?: () => void;
 }
 
-export default function StudentFormModal({ isOpen, onClose, classroomId }: StudentFormModalProps) {
+export default function StudentFormModal({ isOpen, onClose, classroomId, onStudentAdded }: StudentFormModalProps) {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [photo, setPhoto] = useState("");
@@ -35,6 +36,10 @@ export default function StudentFormModal({ isOpen, onClose, classroomId }: Stude
       setFirstName("");
       setLastName("");
       setPhoto("");
+      // Call the callback to refresh the student list
+      if (onStudentAdded) {
+        onStudentAdded();
+      }
       // Close modal after a brief delay
       setTimeout(() => {
         onClose();
@@ -130,7 +135,7 @@ export default function StudentFormModal({ isOpen, onClose, classroomId }: Stude
             <button
               type="submit"
               disabled={isLoading}
-              className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-medium py-3 px-4 rounded-lg transition duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98] disabled:transform-none"
+              className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-medium py-3 px-4 rounded-lg transition duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98] disabled:transform-none cursor-pointer"
             >
               {isLoading ? "Adding..." : "Add Student"}
             </button>
