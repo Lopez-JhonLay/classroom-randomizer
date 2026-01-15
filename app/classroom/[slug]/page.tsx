@@ -25,10 +25,12 @@ function Page() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [isRandomizing, setIsRandomizing] = useState(false);
   const [showWinner, setShowWinner] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     // Fetch classroom and students
     const fetchData = async () => {
+      setIsLoading(true);
       const classroomResult = await getClassroomBySection(section);
       if (classroomResult.success && classroomResult.data) {
         setClassroomId(classroomResult.data.id);
@@ -37,6 +39,7 @@ function Page() {
           setStudents(studentsResult.data);
         }
       }
+      setIsLoading(false);
     };
     fetchData();
   }, [section]);
@@ -95,7 +98,16 @@ function Page() {
         section={section}
       />
 
-      <ClassroomGrid students={students} selectedId={selectedId} isRandomizing={isRandomizing} />
+      {isLoading ? (
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+            <p className="text-gray-600 text-lg">Loading students...</p>
+          </div>
+        </div>
+      ) : (
+        <ClassroomGrid students={students} selectedId={selectedId} isRandomizing={isRandomizing} />
+      )}
 
       {selectedStudent && (
         <WinnerModal
