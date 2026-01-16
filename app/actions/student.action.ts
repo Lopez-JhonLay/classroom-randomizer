@@ -49,6 +49,27 @@ export async function getStudentsByClassroom(classroomId: string) {
   }
 }
 
+export async function getStudentById(studentId: string) {
+  try {
+    const student = await prisma.student.findUnique({
+      where: {
+        id: studentId,
+      },
+    });
+
+    if (!student) {
+      return { success: false, error: "Student not found" };
+    }
+
+    return { success: true, data: student };
+  } catch (error) {
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to fetch student" };
+  }
+}
+
 export async function updateStudent(
   studentId: string,
   data: {
