@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import ClassroomGrid from "@/app/components/ClassroomGrid";
 import Header from "@/app/components/Header";
 import WinnerModal from "@/app/components/WinnerModal";
+import StudentFormModal from "@/app/components/StudentFormModal";
 import { getStudentsByClassroom } from "@/app/actions/student.action";
 import { getClassroomBySection } from "@/app/actions/classroom.action";
 
@@ -26,6 +27,8 @@ function Page() {
   const [isRandomizing, setIsRandomizing] = useState(false);
   const [showWinner, setShowWinner] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingStudentId, setEditingStudentId] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
@@ -89,6 +92,22 @@ function Page() {
     setShowWinner(false);
   }, []);
 
+  const handleStudentClick = useCallback(
+    (studentId: string) => {
+      // Don't allow editing during randomization
+      if (isRandomizing) return;
+
+      setEditingStudentId(studentId);
+      setIsModalOpen(true);
+    },
+    [isRandomizing]
+  );
+
+  const handleCloseModal = useCallback(() => {
+    setIsModalOpen(false);
+    setEditingStudentId(null);
+  }, []);
+
   return (
     <div>
       <Header
@@ -107,7 +126,12 @@ function Page() {
           </div>
         </div>
       ) : (
-        <ClassroomGrid students={students} selectedId={selectedId} isRandomizing={isRandomizing} />
+        <ClassroomGrid
+          students={students}
+          selectedId={selectedId}
+          isRandomizing={isRandomizing}
+          onStudentClick={handleStudentClick}
+        />
       )}
 
       {selectedStudent && (
@@ -116,6 +140,16 @@ function Page() {
           avatar={selectedStudent.avatar}
           isVisible={showWinner}
           onClose={handleCloseWinner}
+        />
+      )}
+
+      {classroomId && (
+        <StudentFormModal
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          classroomId={classroomId}
+          onStudentAdded={fetchData}
+          studentId={editingStudentId}
         />
       )}
     </div>
