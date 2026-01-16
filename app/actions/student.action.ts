@@ -48,3 +48,55 @@ export async function getStudentsByClassroom(classroomId: string) {
     return { success: false, error: "Failed to fetch students" };
   }
 }
+
+export async function updateStudent(
+  studentId: string,
+  data: {
+    firstName?: string;
+    lastName?: string;
+    urlPhoto?: string;
+  }
+) {
+  try {
+    const student = await prisma.student.update({
+      where: {
+        id: studentId,
+      },
+      data: {
+        ...(data.firstName !== undefined && { firstName: data.firstName }),
+        ...(data.lastName !== undefined && { lastName: data.lastName }),
+        ...(data.urlPhoto !== undefined && { urlPhoto: data.urlPhoto || null }),
+      },
+    });
+
+    revalidatePath("/classroom");
+
+    return { success: true, data: student };
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error("Error updating student:", error.message);
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to update student" };
+  }
+}
+
+export async function deleteStudent(studentId: string) {
+  try {
+    await prisma.student.delete({
+      where: {
+        id: studentId,
+      },
+    });
+
+    revalidatePath("/classroom");
+
+    return { success: true };
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error("Error deleting student:", error.message);
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to delete student" };
+  }
+}
