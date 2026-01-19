@@ -76,7 +76,7 @@ function ClassroomGrid({ students, selectedId = null, isRandomizing = false, onS
         student.isSelected ? "drop-shadow-[0_0_8px_rgba(45,212,191,0.8)]" : ""
       }`}
     >
-      <audio ref={audioRef} src="/sounds/grand-dark-waltz-allegro.mp3" preload="auto" />
+      <audio ref={audioRef} src="/sounds/grand-dark-waltz-allegro.mp3" preload="auto" loop />
       <div className="relative flex flex-col items-center">
         <img
           src={student.avatar}
