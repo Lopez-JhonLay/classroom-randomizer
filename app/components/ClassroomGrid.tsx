@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { useEffect, useRef } from "react";
 
 interface Student {
   id: string;
@@ -17,6 +17,27 @@ interface ClassroomGridProps {
 
 function ClassroomGrid({ students, selectedId = null, isRandomizing = false, onStudentClick }: ClassroomGridProps) {
   const studentCount = students.length;
+
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = 0.3;
+      // Try to play the audio
+      const playPromise = audioRef.current.play();
+
+      // Handle autoplay restrictions
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            console.log("Sound played successfully");
+          })
+          .catch((error: unknown) => {
+            console.log("Autoplay prevented. User interaction required.", error);
+          });
+      }
+    }
+  }, []);
 
   // If no students, show empty state
   if (studentCount === 0) {
@@ -55,6 +76,7 @@ function ClassroomGrid({ students, selectedId = null, isRandomizing = false, onS
         student.isSelected ? "drop-shadow-[0_0_8px_rgba(45,212,191,0.8)]" : ""
       }`}
     >
+      <audio ref={audioRef} src="/sounds/grand-dark-waltz-allegro.mp3" preload="auto" />
       <div className="relative flex flex-col items-center">
         <img
           src={student.avatar}

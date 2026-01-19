@@ -1,6 +1,7 @@
 "use client";
 
-import Image from "next/image";
+import { useEffect, useRef } from "react";
+
 import Confetti from "react-confetti";
 import { useWindowSize } from "react-use";
 
@@ -13,6 +14,26 @@ interface WinnerModalProps {
 
 function WinnerModal({ name, avatar, isVisible, onClose }: WinnerModalProps) {
   const { width, height } = useWindowSize();
+  const audioRef2 = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    if (isVisible && audioRef2.current) {
+      audioRef2.current.volume = 0.3;
+      // Try to play the audio
+      const playPromise = audioRef2.current.play();
+
+      // Handle autoplay restrictions
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            console.log("Sound played successfully");
+          })
+          .catch((error: unknown) => {
+            console.log("Autoplay prevented. User interaction required.", error);
+          });
+      }
+    }
+  }, [isVisible]);
 
   if (!isVisible) return null;
 
@@ -20,6 +41,7 @@ function WinnerModal({ name, avatar, isVisible, onClose }: WinnerModalProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={onClose}>
+      <audio ref={audioRef2} src="/sounds/mixkit-cheering-crowd-loud-whistle-610.wav" preload="auto" />
       <Confetti width={width} height={height} recycle={true} numberOfPieces={300} />
       <div className="flex flex-col items-center animate-winner-zoom" onClick={(e) => e.stopPropagation()}>
         {/* Student figure - enlarged */}

@@ -100,7 +100,7 @@ function Page() {
       setEditingStudentId(studentId);
       setIsModalOpen(true);
     },
-    [isRandomizing]
+    [isRandomizing],
   );
 
   const handleCloseModal = useCallback(() => {
