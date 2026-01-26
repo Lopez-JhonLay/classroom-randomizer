@@ -49,9 +49,7 @@ function WinnerModal({ name, avatar, isVisible, onClose }: WinnerModalProps) {
           <img
             src={avatar}
             alt={name}
-            width={280}
-            height={280}
-            className="rounded-full border-8 border-white shadow-2xl object-cover z-10"
+            className="w-[280px] h-[280px] rounded-full border-8 border-white shadow-2xl object-cover z-10"
           />
           <svg width="400" height="200" viewBox="-5 0 110 55" className="-mt-12 z-20" style={{ overflow: "visible" }}>
             {/* Left arm */}
