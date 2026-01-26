@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { getCroppedImageUrl } from "../../lib/imageUtils";
 
 interface Student {
   id: string;
@@ -55,7 +56,9 @@ function ClassroomGrid({ students, selectedId = null, isRandomizing = false, onS
     ...student,
     isSelected: selectedId === student.id,
     displayName: `${student.firstName} ${student.lastName.charAt(0)}.`,
-    avatar: student.urlPhoto || `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70) + 1}`,
+    avatar: student.urlPhoto
+      ? getCroppedImageUrl(student.urlPhoto, 150)
+      : `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70) + 1}`,
   }));
 
   // Split students evenly between two columns (left gets extra if odd)
@@ -81,9 +84,7 @@ function ClassroomGrid({ students, selectedId = null, isRandomizing = false, onS
         <img
           src={student.avatar}
           alt={student.displayName}
-          width={72}
-          height={72}
-          className="rounded-full border-4 border-white shadow-md object-cover z-10"
+          className="w-[72px] h-[72px] rounded-full border-4 border-white shadow-md object-cover z-10"
         />
         <svg width="100" height="50" viewBox="-5 0 110 55" className="-mt-4 z-20" style={{ overflow: "visible" }}>
           <ellipse cx="12" cy="28" rx="8" ry="18" fill={skinColor} transform="rotate(-15 12 28)" />

@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { createStudent, updateStudent, getStudentById, deleteStudent } from "../actions/student.action";
+import { cropImageToSquare } from "../../lib/imageUtils";
 
 interface StudentFormModalProps {
   isOpen: boolean;
@@ -21,8 +22,11 @@ export default function StudentFormModal({
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [photo, setPhoto] = useState("");
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isEditMode = !!studentId;
 
@@ -36,6 +40,7 @@ export default function StudentFormModal({
           setFirstName(result.data.firstName);
           setLastName(result.data.lastName);
           setPhoto(result.data.urlPhoto || "");
+          setPhotoPreview(result.data.urlPhoto || "");
         } else {
           setMessage({ type: "error", text: result.error || "Failed to load student" });
         }
@@ -47,9 +52,58 @@ export default function StudentFormModal({
       setFirstName("");
       setLastName("");
       setPhoto("");
+      setPhotoFile(null);
+      setPhotoPreview("");
       setMessage(null);
     }
   }, [isOpen, studentId]);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      setMessage({ type: "error", text: "Please select a valid image file" });
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setMessage({ type: "error", text: "Image size must be less than 5MB" });
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const croppedDataUrl = await cropImageToSquare(file);
+      setPhotoFile(file);
+      setPhotoPreview(croppedDataUrl);
+      setPhoto(""); // Clear URL input when file is selected
+      setMessage(null);
+    } catch (error) {
+      console.error("Error cropping image:", error);
+      setMessage({ type: "error", text: "Failed to process image" });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handlePhotoUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const url = e.target.value;
+    setPhoto(url);
+    setPhotoPreview(url);
+    setPhotoFile(null); // Clear file when URL is entered
+  };
+
+  const clearPhoto = () => {
+    setPhoto("");
+    setPhotoFile(null);
+    setPhotoPreview("");
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -59,17 +113,19 @@ export default function StudentFormModal({
     setMessage(null);
 
     let result;
+    const photoData = photoFile ? photoPreview : photo || undefined;
+
     if (isEditMode && studentId) {
       result = await updateStudent(studentId, {
         firstName,
         lastName,
-        urlPhoto: photo || undefined,
+        urlPhoto: photoData,
       });
     } else {
       result = await createStudent({
         firstName,
         lastName,
-        urlPhoto: photo || undefined,
+        urlPhoto: photoData,
         classroomId,
       });
     }
@@ -82,6 +138,8 @@ export default function StudentFormModal({
       setFirstName("");
       setLastName("");
       setPhoto("");
+      setPhotoFile(null);
+      setPhotoPreview("");
       // Call the callback to refresh the student list
       if (onStudentAdded) {
         onStudentAdded();
@@ -189,17 +247,62 @@ export default function StudentFormModal({
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="photo" className="block text-sm font-medium text-gray-700">
-              Photo URL
-            </label>
-            <input
-              id="photo"
-              type="text"
-              value={photo}
-              onChange={(e) => setPhoto(e.target.value)}
-              placeholder="Enter photo URL"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
-            />
+            <label className="block text-sm font-medium text-gray-700">Student Photo</label>
+
+            {/* Photo Preview */}
+            {photoPreview && (
+              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                <img
+                  src={photoPreview}
+                  alt="Preview"
+                  className="w-16 h-16 rounded-full object-cover border-2 border-gray-200"
+                />
+                <button
+                  type="button"
+                  onClick={clearPhoto}
+                  className="text-red-600 hover:text-red-800 text-sm font-medium"
+                >
+                  Remove Photo
+                </button>
+              </div>
+            )}
+
+            {/* File Upload */}
+            <div className="space-y-2">
+              <label htmlFor="photoFile" className="block text-xs text-gray-600">
+                Upload Image File (will be cropped to square)
+              </label>
+              <input
+                ref={fileInputRef}
+                id="photoFile"
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition text-sm"
+              />
+            </div>
+
+            {/* OR divider */}
+            <div className="flex items-center gap-3">
+              <div className="flex-1 h-px bg-gray-300"></div>
+              <span className="text-xs text-gray-500">OR</span>
+              <div className="flex-1 h-px bg-gray-300"></div>
+            </div>
+
+            {/* URL Input */}
+            <div className="space-y-2">
+              <label htmlFor="photo" className="block text-xs text-gray-600">
+                Photo URL
+              </label>
+              <input
+                id="photo"
+                type="text"
+                value={photo}
+                onChange={handlePhotoUrlChange}
+                placeholder="Enter photo URL"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+              />
+            </div>
           </div>
 
           <div className="flex gap-3 pt-4">
